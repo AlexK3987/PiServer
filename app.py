@@ -35,8 +35,7 @@ def sudoku():
     
     with urlopen('http://cs.utep.edu/cheon/ws/sudoku/new/?size=9&level=3') as r:
         text=r.read() 
-    
-    
+        
     #cache curpuzz.json if it exists arady
     """
     if path.exists("curpuzz.json"):
@@ -45,20 +44,10 @@ def sudoku():
                 archive.write(cur.read)
     """
 
-            
-
     #store puzzle
     with open(puzz_file, 'wb') as f:
         f.write(text)
-
-    #run puzzle solver on curpuzz.json
-    #writes solution to curpuzzsoln.json
-    #os.system("./sudokusolver "+puzzfile);
-    solver = SudokuSolver(text) 
-    if solver.solve():
-        solver.saveSoln(soln_file)
-    
-    
+     
     #return formatted puzzle
     return WebFormatter.formatSudoku(text)
 
@@ -67,7 +56,27 @@ def sudoku_soln():
     #display puzzle solver's solution
     #reads solution from curpuzzsoln.json
     
+    #run puzzle solver on curpuzz.json
+    #writes solution to curpuzzsoln.json
+    #os.system("./sudokusolver "+puzzfile);
+    solver = SudokuSolver(text) 
+    if solver.solve():
+        solver.saveSoln(soln_file)
     return WebFormatter.formatSudokuJson(soln_file);
+
+
+@app.route('/sudoku/checksolution')
+def check_soln():
+    #make sure solution has been made
+    #take picture
+    #parse numbers
+    #read in solution from parsed picture
+    #skip over empty, check if numbers entereed are correct
+    return "check solution"
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port = dev_port)

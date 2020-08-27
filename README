@@ -1,0 +1,13 @@
+GET endpoints
+/
+Index of functions
+
+/sudoku
+Calls api and displays sudoku problem
+
+/sudoku/solution
+Solves sudoku and displays solution
+
+
+
+
