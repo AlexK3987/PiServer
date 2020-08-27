@@ -2,10 +2,18 @@ from flask import Flask
 from flask import request
 from urllib.request import urlopen
 import os
+from os import path
+
+from datetime import datetime
 
 from webformatter import WebFormatter
+from sudokusolver import SudokuSolver
 
 curdir = '~/webapp'
+dev_port = 5001
+
+proddir = "~/prodwebapp"
+prod_port = 5000
 
 app = Flask(__name__)
 
@@ -21,25 +29,40 @@ def index():
 @app.route('/sudoku')
 def sudoku():
     #get a new puzzle from the api
+    
     with urlopen('http://cs.utep.edu/cheon/ws/sudoku/new/?size=9&level=3') as r:
         text=r.read() 
     
+    
     #cache curpuzz.json if it exists arady
+    """
+    if path.exists("curpuzz.json"):
+        with open("curpuzz.json","r"): as cur:
+            with open("archive/"+datetime.now(),'wb') as archive:
+                archive.write(cur.read)
+    """
+
+            
 
     #store puzzle
     with open("curpuzz.json", 'wb') as f:
         f.write(text)
 
-    #run c++ puzzle solver on curpuzz.json
-    #os.system("solvepuzz "+curdir+"/curpuzz.json");
+    #run puzzle solver on curpuzz.json
+    #writes solution to curpuzzsoln.json
+    #os.system("./sudokusolver curpuzz.json");
+    solver = SudokuSolver(text) 
+    solver.solve()
     
     #return formatted puzzle
-    return WebFormatter.formatSudoku("curpuzz.json")
+    return WebFormatter.formatSudoku(text)
 
 @app.route('/sudoku/solution')
 def sudoku_soln():
     #display puzzle solver's solution
-    return "SOLUTION:"
+    #reads solution from curpuzzsoln.json
+    
+    return WebFormatter.formatSudokuJson("curpuzzsoln.json");
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port = dev_port)

@@ -28,10 +28,9 @@ class WebFormatter:
     @staticmethod
     def sudokuTable(json_in):
         data_dict= defaultdict(dict)
-        with open(json_in) as f:
-            data = json.load(f);
-            for square in data['squares']:
-                data_dict[square['x']][square['y']]=square['value']
+        data = json.loads(json_in);
+        for square in data['squares']:
+            data_dict[square['x']][square['y']]=square['value']
         text="<table>"
         for i in range(9):
             text+="<tr>"
@@ -49,5 +48,13 @@ class WebFormatter:
     def formatSudoku(s):
         style=WebFormatter.sudokuStyle()
         table=WebFormatter.sudokuTable(s)
+        return style+table
+
+    @staticmethod
+    def formatSudokuJson(s):
+        with open(s,"r") as f:
+            data=f.read();
+        style=WebFormatter.sudokuStyle()
+        table=WebFormatter.sudokuTable(data)
         return style+table
 
