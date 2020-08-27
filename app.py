@@ -11,6 +11,9 @@ from sudokusolver import SudokuSolver
 
 curdir = '~/webapp'
 dev_port = 5001
+soln_file="curpuzzsoln.json"
+puzz_file="curpuzz.json"
+
 
 proddir = "~/prodwebapp"
 prod_port = 5000
@@ -45,14 +48,16 @@ def sudoku():
             
 
     #store puzzle
-    with open("curpuzz.json", 'wb') as f:
+    with open(puzz_file, 'wb') as f:
         f.write(text)
 
     #run puzzle solver on curpuzz.json
     #writes solution to curpuzzsoln.json
-    #os.system("./sudokusolver curpuzz.json");
+    #os.system("./sudokusolver "+puzzfile);
     solver = SudokuSolver(text) 
-    solver.solve()
+    if solver.solve():
+        solver.saveSoln(soln_file)
+    
     
     #return formatted puzzle
     return WebFormatter.formatSudoku(text)
@@ -62,7 +67,7 @@ def sudoku_soln():
     #display puzzle solver's solution
     #reads solution from curpuzzsoln.json
     
-    return WebFormatter.formatSudokuJson("curpuzzsoln.json");
+    return WebFormatter.formatSudokuJson(soln_file);
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port = dev_port)

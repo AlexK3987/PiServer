@@ -5,8 +5,9 @@ from collections import defaultdict
 class SudokuSolver:
     def __init__(self,json_in):
         self.data_dict = defaultdict(dict)
-        self.solved = defaultdict(dict)
+        self.soln = defaultdict(dict)
         self.json_in=json_in
+        self.dep_index=self.getAllDeps()
         data = json.loads(json_in);
         for square in data['squares']:
             self.data_dict[square['x']][square['y']]=square['value']
@@ -14,10 +15,26 @@ class SudokuSolver:
     #csp algo?
     def solve(self):
         #solve puzzle
-        if self.solveSoduku(self.data_dict,self.getAllValid(self.data_dict)):
-            print("SOLVED")
-        #convert back to json
-        #save json
+        return self.solveSoduku(self.data_dict,self.getAllValid(self.data_dict))
+
+
+    def saveSoln(self,name):
+        out = self.convert(self.soln)
+        with open(name,'w') as f:
+            json.dump(out,f)
+
+    def convert(self,to_convert):
+        squares=[]
+        for i in range(9):
+            for j in range(9):
+                obj = {}
+                obj['x']=i
+                obj['y']=j
+                obj['value'] = to_convert[i][j]
+                squares.append(obj)
+        out={}
+        out['squares']=squares
+        return out
 
 
 
@@ -25,14 +42,8 @@ class SudokuSolver:
         #base case: no more valid entries to fill out
         #print(valid_entries)
         if len(valid_entries)==0:
-            print("SOLVED")
-            print(grid)
-            #save grid here
+            self.soln=grid
             return True
-        """
-        else:
-            print(len(valid_entries))
-        """
         #find most constrained value 
         min_ls = list(range(1,10))
         min_loc = (-1,-1)
@@ -40,8 +51,6 @@ class SudokuSolver:
             loc = entry['loc']#tuple of i,j
             ls = entry['ls']#list of possible values at location loc
             if len(ls)==0:
-                print(len(valid_entries))
-                print("failed")
                 return False
             if len(ls)<len(min_ls):
                 min_ls=ls
@@ -73,10 +82,6 @@ class SudokuSolver:
             #if a recursive step reached the solution return true
             if self.solveSoduku(new_grid,new_valid_entries):
                 return True
-
-
-        print(len(valid_entries))
-        print("outer failed")
         return False
             
 
@@ -96,7 +101,7 @@ class SudokuSolver:
     #returns object loc: i,j and ls: list of possible vals
     def getValid(self,grid, i, j):
         posvals= list(range(1,10))
-        for x,y in self.getDependentIndex((i,j)):
+        for x,y in self.dep_index[i][j]:
             try:
                 cur_val = grid[x][y]
                 posvals.remove(cur_val)
@@ -114,7 +119,7 @@ class SudokuSolver:
 
 
     def updateValid(self,valid_vals, loc, val):
-        dep_index=self.getDependentIndex(loc)
+        dep_index=self.dep_index[loc[0]][loc[1]]
         new_vals = list()
         for elem in valid_vals:
             cur_loc=elem['loc']
@@ -129,6 +134,14 @@ class SudokuSolver:
         
         return new_vals
 
+
+    #caching all of the dependent indicies
+    def getAllDeps(self):
+        out = defaultdict(dict)
+        for i in range(9):
+            for j in range(9):
+                out[i][j]=self.getDependentIndex((i,j))
+        return out
 
 
     def getDependentIndex(self,loc):
